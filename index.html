@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e3c72">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>المسبحة الذكية</title>
+    <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22المسبحة%20الذكية%22%2C%22short_name%22%3A%22المسبحة%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20512%20512'%253E%253Ccircle%20cx%3D'256'%20cy%3D'256'%20r%3D'200'%20fill%3D'%25231e3c72'%2F%253E%253Ctext%20x%3D'50%2525'%20y%3D'50%2525'%20text-anchor%3D'middle'%20dy%3D'.3em'%20fill%3D'white'%20font-size%3D'200'%253E📿%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231e3c72%22%2C%22theme_color%22%3A%22%231e3c72%22%2C%22orientation%22%3A%22portrait%22%2C%22lang%22%3A%22ar%22%7D">
+    
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #2a5298;
+            --accent-color: #4CAF50;
+            --danger-color: #f44336;
+            --text-light: #f0f0f0;
+            --text-dark: #333;
+            --text-muted: #666;
+            --bg-light: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --bg-dark: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            --card-light: rgba(255, 255, 255, 0.95);
+            --card-dark: rgba(30, 30, 46, 0.85);
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: all 0.15s ease;
+            --border-radius: 15px;
+            --border-radius-lg: 20px;
+            --primary-btn-color: #1e3c72;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            transition: var(--transition);
+            background-attachment: fixed;
+            padding-bottom: 90px;
+            overscroll-behavior: none;
+            background-position: center;
+            background-size: cover;
+            line-height: 1.6;
+        }
+
+        body.dark-mode {
+            background: var(--bg-dark);
+            color: var(--text-light);
+        }
+
+        body.english {
+            direction: ltr;
+            text-align: left;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--card-light);
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        body.dark-mode .status-bar {
+            background: var(--card-dark);
+        }
+
+        .date-display {
+            font-size: 0.9em;
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            transition: var(--transition);
+            border: none;
+            background: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            position: relative;
+            padding-right: 35px !important;
+        }
+
+        .date-display.loading::after {
+            content: '⏳';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: translateY(-50%) rotate(0deg); }
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .date-display.error {
+            color: var(--danger-color) !important;
+        }
+
+        .date-display:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark-mode .date-display:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .update-indicator {
+            font-size: 0.7em;
+            margin-left: 8px;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .status-icon {
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 8px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.05);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            color: var(--text-dark);
+        }
+
+        body.dark-mode .status-icon {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+        }
+
+        .status-icon:hover {
+            transform: scale(1.1);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .status-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px 20px;
+            background: var(--card-light);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+        }
+
+        body.dark-mode .header {
+            background: var(--card-dark);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        body.dark-mode .header h1 {
+            color: var(--text-light);
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1em;
+            opacity: 0.8;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tasbih-container {
+            text-align: center;
+            padding: 35px 25px;
+            background: var(--card-light);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        body.dark-mode .tasbih-container {
+            background: var(--card-dark);
+        }
+
+        .tasbih-selector {
+            margin-bottom: 30px;
+        }
+
+        .tasbih-selector label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--primary-color);
+        }
+
+        body.dark-mode .tasbih-selector label {
+            color: var(--accent-color);
+        }
+
+        .tasbih-selector select {
+            padding: 14px 30px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            border: 2px solid var(--primary-color);
+            background: var(--card-light);
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            max-width: 320px;
+            font-weight: 500;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%231e3c72' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 15px center;
+            background-size: 16px;
+        }
+
+        body.dark-mode .tasbih-selector select {
+            background: var(--card-dark);
+            color: var(--text-light);
+            border-color: var(--accent-color);
+        }
+
+        .tasbih-selector select:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(30, 60, 114, 0.2);
+        }
+
+        .tasbih-circle-wrapper {
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .tasbih-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: var(--primary-btn-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            z-index: 1;
+        }
+
+        .tasbih-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .tasbih-btn:hover::before {
+            opacity: 1;
+        }
+
+        .tasbih-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tasbih-btn:active {
+            transform: scale(0.95);
+        }
+
+        .tasbih-number {
+            font-size: 3.5em;
+            font-weight: 700;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            transition: var(--transition-fast);
+            z-index: 2;
+        }
+
+        .color-change-wrapper {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .color-change-btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57);
+            background-size: 300% 300%;
+            animation: gradientShift 3s ease infinite;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .color-change-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .color-change-btn:active {
+            transform: scale(0.95);
+        }
+
+        .voice-indicator {
+            margin: 20px 0;
+            padding: 16px 25px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 1em;
+            transition: var(--transition);
+            min-height: 60px;
+            font-weight: 500;
+        }
+
+        body.dark-mode .voice-indicator {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .voice-indicator.listening {
+            background: rgba(76, 175, 80, 0.15);
+            animation: pulse 2s infinite;
+            color: var(--accent-color);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 0.8; }
+        }
+
+        .tasbih-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+            touch-action: manipulation;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .control-btn:hover::before {
+            left: 100%;
+        }
+
+        .control-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .control-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .control-btn.danger {
+            background: var(--danger-color);
+        }
+
+        .last-detected {
+            margin-top: 20px;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 10px;
+            font-size: 0.9em;
+            color: var(--text-dark);
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 4px solid var(--accent-color);
+            transition: var(--transition);
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        body.dark-mode .last-detected {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-light);
+        }
+
+        .my-azkar-container {
+            background: var(--card-light);
+            border-radius: var(--border-radius-lg);
+            padding: 35px 30px;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        body.dark-mode .my-azkar-container {
+            background: var(--card-dark);
+        }
+
+        .my-azkar-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .my-azkar-header h2 {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        body.dark-mode .my-azkar-header h2 {
+            color: var(--text-light);
+        }
+
+        .my-azkar-header p {
+            color: var(--text-muted);
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        body.dark-mode .my-azkar-header p {
+            color: var(--text-light);
+        }
+
+        .add-zekr-form {
+            background: rgba(0, 0, 0, 0.03);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode .add-zekr-form {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.95em;
+        }
+
+        body.dark-mode .form-group label {
+            color: var(--accent-color);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            background: var(--card-light);
+            color: var(--text-dark);
+            font-size: 1em;
+            transition: var(--transition);
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group textarea {
+            background: var(--card-dark);
+            color: var(--text-light);
+            border-color: var(--accent-color);
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(30, 60, 114, 0.2);
+        }
+
+        .add-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: var(--transition);
+            display: block;
+            margin: 0 auto;
+            min-width: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .add-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .add-btn:hover::before {
+            left: 100%;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .my-azkar-list {
+            margin-top: 30px;
+        }
+
+        .zekr-item {
+            background: var(--card-light);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode .zekr-item {
+            background: var(--card-dark);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .zekr-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .zekr-item:first-child {
+            border-top: 3px solid var(--accent-color);
+        }
+
+        .zekr-text {
+            font-size: 1.1em;
+            line-height: 1.7;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            padding-right: 50px;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        body.english .zekr-text {
+            padding-right: 0;
+            padding-left: 50px;
+        }
+
+        body.dark-mode .zekr-text {
+            color: var(--text-light);
+        }
+
+        .zekr-date {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: var(--transition-fast);
+            font-weight: 600;
+            min-width: 50px;
+        }
+
+        .delete-btn:hover {
+            background: #d32f2f;
+            transform: scale(1.05);
+        }
+
+        body.english .delete-btn {
+            right: auto;
+            left: 20px;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        .settings-container {
+            background: var(--card-light);
+            border-radius: var(--border-radius-lg);
+            padding: 35px 30px;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        body.dark-mode .settings-container {
+            background: var(--card-dark);
+        }
+
+        .settings-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .settings-header h2 {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        body.dark-mode .settings-header h2 {
+            color: var(--text-light);
+        }
+
+        .settings-group {
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark-mode .settings-group {
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .settings-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .settings-group h3 {
+            color: var(--primary-color);
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        body.dark-mode .settings-group h3 {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .setting-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode .setting-item {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        body.dark-mode .setting-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .setting-item label {
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        body.dark-mode .setting-item label {
+            color: var(--text-light);
+        }
+
+        .setting-item > div {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .bg-controls-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            max-width: 250px;
+        }
+
+        .bg-buttons-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .bg-buttons-row .control-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px 16px;
+            font-size: 13px;
+        }
+
+        .background-picker.hidden {
+            display: none;
+        }
+
+        .bg-preview {
+            width: 100%;
+            height: 60px;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid var(--primary-color);
+            display: none;
+        }
+
+        .bg-preview.show {
+            display: block;
+        }
+
+        body.dark-mode .bg-preview {
+            border-color: var(--accent-color);
+        }
+
+        .color-menu {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-light);
+            border-radius: var(--border-radius-lg);
+            padding: 25px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            display: none;
+            backdrop-filter: blur(20px);
+            max-width: 90%;
+            width: 420px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .color-menu {
+            background: var(--card-dark);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .color-menu.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .color-menu h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        body.dark-mode .color-menu h3 {
+            color: var(--text-light);
+        }
+
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 0 10px;
+        }
+
+        .color-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .color-option.selected {
+            border-color: white;
+            transform: scale(1.15);
+            box-shadow: 0 0 0 3px var(--primary-color);
+        }
+
+        .color-menu-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+        }
+
+        .color-menu-close:hover {
+            transform: scale(1.1);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1500;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .overlay.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-light);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+            transition: var(--transition);
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(10px);
+            height: 80px;
+        }
+
+        body.dark-mode .bottom-nav {
+            background: var(--card-dark);
+            border-top-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 5px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            border-radius: 12px;
+            margin: 0 8px;
+            text-decoration: none;
+            min-height: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-color);
+            opacity: 0;
+            transition: var(--transition);
+            border-radius: 12px;
+        }
+
+        .nav-item.active {
+            color: var(--accent-color);
+            transform: translateY(-5px);
+        }
+
+        .nav-item.active::before {
+            opacity: 0.15;
+        }
+
+        .nav-item:active {
+            transform: scale(0.95);
+        }
+
+        .nav-item span:first-child {
+            font-size: 1.6em;
+            margin-bottom: 4px;
+            transition: var(--transition);
+            z-index: 1;
+        }
+
+        .nav-item span:last-child {
+            font-size: 0.75em;
+            font-weight: 600;
+            z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .status-bar {
+                padding: 12px 15px;
+                top: 0;
+                border-radius: 0;
+                margin-bottom: 15px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .tasbih-container {
+                padding: 25px 20px;
+            }
+
+            .tasbih-btn {
+                width: 170px;
+                height: 170px;
+            }
+            
+            .tasbih-number {
+                font-size: 2.8em;
+            }
+
+            .color-change-wrapper {
+                margin: 15px 0;
+            }
+
+            .color-change-btn {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+
+            .color-menu {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .color-options {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+
+            .color-option {
+                width: 50px;
+                height: 50px;
+            }
+
+            .bottom-nav {
+                height: 75px;
+            }
+
+            .nav-item {
+                margin: 0 5px;
+            }
+            
+            .bg-controls-wrapper {
+                max-width: 200px;
+            }
+            
+            .bg-buttons-row {
+                flex-direction: row;
+                gap: 5px;
+            }
+            
+            .bg-buttons-row .control-btn {
+                min-width: 80px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tasbih-btn {
+                width: 150px;
+                height: 150px;
+            }
+
+            .tasbih-number {
+                font-size: 2.3em;
+            }
+
+            .control-btn {
+                padding: 12px 20px;
+                font-size: 13px;
+            }
+
+            .color-change-btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+
+            .color-options {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .bg-preview {
+            width: 100%;
+            height: 80px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .bg-preview.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- شريط الحالة العلوي -->
+    <header class="status-bar">
+        <button class="date-display" id="dateDisplay" aria-live="polite" onclick="DateController.forceUpdate()" title="اضغط للتحديث اليدوي">
+            <span data-ar="جاري التحميل..." data-en="Loading...">جاري التحميل...</span>
+            <span class="update-indicator" id="updateIndicator" style="display: none;">🔄</span>
+        </button>
+        <div class="status-icons">
+            <button class="status-icon hidden" id="installIcon" onclick="PWAController.install()" title="Install app" aria-label="Install app">⬇️</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- رأس الصفحة -->
+        <section class="header">
+            <h1 data-ar="📿 المسبحة الذكية" data-en="📿 Smart Tasbih">📿 المسبحة الذكية</h1>
+            <p data-ar="التسبيح باللمس أو الصوت - تطبيق كامل" data-en="Tap or Voice Tasbih - Full App">التسبيح باللمس أو الصوت - تطبيق كامل</p>
+        </section>
+
+        <!-- قسم المسبحة -->
+        <main id="tasbih-section" class="content-section active">
+            <div class="tasbih-container">
+                <div class="tasbih-selector">
+                    <label for="tasbihSelect" data-ar="اختر الذكر:" data-en="Select Dhikr:">اختر الذكر:</label>
+                    <select id="tasbihSelect" onchange="TasbihController.updateCurrent()" aria-label="Select dhikr">
+                        <option value="سبحان الله" data-ar="سبحان الله" data-en="Subhan Allah">سبحان الله</option>
+                        <option value="الحمد لله" data-ar="الحمد لله" data-en="Alhamdulillah">الحمد لله</option>
+                        <option value="لا إله إلا الله" data-ar="لا إله إلا الله" data-en="La ilaha illa Allah">لا إله إلا الله</option>
+                        <option value="الله أكبر" data-ar="الله أكبر" data-en="Allahu Akbar">الله أكبر</option>
+                        <option value="لا حول ولا قوة إلا بالله" data-ar="لا حول ولا قوة إلا بالله" data-en="La hawla wa la quwwata illa billah">لا حول ولا قوة إلا بالله</option>
+                        <option value="استغفر الله" data-ar="استغفر الله" data-en="Astaghfirullah">استغفر الله</option>
+                    </select>
+                </div>
+
+                <div class="tasbih-circle-wrapper">
+                    <button class="tasbih-btn" id="tasbihBtn" 
+                            onclick="TasbihController.increment()"
+                            oncontextmenu="return false;"
+                            aria-label="Tasbih button">
+                        <span class="tasbih-number" id="counter">0</span>
+                    </button>
+                </div>
+
+                <div class="color-change-wrapper">
+                    <button class="control-btn color-change-btn" onclick="ColorPicker.show()" aria-label="Change button color">
+                        <span aria-hidden="true">🎨</span>
+                        <span data-ar="تغيير لون الزر" data-en="Change Button Color">تغيير لون الزر</span>
+                    </button>
+                </div>
+
+                <div class="voice-indicator" id="voiceIndicator" role="status" aria-live="polite">
+                    <span aria-hidden="true">🎤</span>
+                    <span id="voiceStatus" data-ar="التسبيح الصوتي: معطل" data-en="Voice Tasbih: Disabled">التسبيح الصوتي: معطل</span>
+                </div>
+
+                <div class="tasbih-controls">
+                    <button class="control-btn" id="voiceBtn" onclick="VoiceController.toggle()" aria-label="Toggle voice recognition">
+                        <span id="micIcon" aria-hidden="true">🎤</span>
+                        <span data-ar="تفعيل الصوت" data-en="Enable Voice">تفعيل الصوت</span>
+                    </button>
+                    <button class="control-btn" onclick="TasbihController.reset()" aria-label="Reset counter">
+                        <span aria-hidden="true">🔄</span>
+                        <span data-ar="تصفير" data-en="Reset">تصفير</span>
+                    </button>
+                </div>
+
+                <div class="last-detected" id="lastDetected">
+                    <span data-ar="آخر ذكر مستمع إليه: (لم يتم الكشف بعد)" data-en="Last detected: (Not yet detected)">آخر ذكر مستمع إليه: (لم يتم الكشف بعد)</span>
+                </div>
+            </div>
+        </main>
+
+        <section id="my-azkar-section" class="content-section">
+            <div class="my-azkar-container">
+                <div class="my-azkar-header">
+                    <h2 data-ar="📖 أذكاري" data-en="📖 My Azkar">📖 أذكاري</h2>
+                    <p data-ar="سجل أذكارك الخاصة وارجع لها في أي وقت (يعمل بدون إنترنت)" data-en="Save your personal azkar and access them anytime (works offline)">سجل أذكارك الخاصة وارجع لها في أي وقت (يعمل بدون إنترنت)</p>
+                </div>
+
+                <form class="add-zekr-form" onsubmit="AzkarController.add(); return false;" aria-label="Add dhikr form">
+                    <div class="form-group">
+                        <label for="zekrText" data-ar="الذكر:" data-en="Dhikr:">الذكر:</label>
+                        <textarea id="zekrText" rows="3" placeholder="أكتب ذكرك هنا..." data-ar-placeholder="أكتب ذكرك هنا..." data-en-placeholder="Write your dhikr here..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="zekrInfo" data-ar="مصدر/ملاحظة (اختياري):" data-en="Source/Note (optional):">مصدر/ملاحظة (اختياري):</label>
+                        <input type="text" id="zekrInfo" placeholder="مثال: رواه البخاري" data-ar-placeholder="مثال: رواه البخاري" data-en-placeholder="Eg: Narrated by Bukhari">
+                    </div>
+                    <button type="submit" class="add-btn">
+                        <span data-ar="➕ إضافة الذكر" data-en="➕ Add Dhikr">➕ إضافة الذكر</span>
+                    </button>
+                </form>
+
+                <div class="my-azkar-list" id="myAzkarList" role="list">
+                    <div class="empty-message" data-ar="لم تضف أي أذكار بعد. ابدأ الآن!" data-en="No azkar added yet. Start now!">لم تضف أي أذكار بعد. ابدأ الآن!</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="settings-section" class="content-section">
+            <div class="settings-container">
+                <div class="settings-header">
+                    <h2 data-ar="⚙️ الإعدادات" data-en="⚙️ Settings">⚙️ الإعدادات</h2>
+                </div>
+                
+                <div class="settings-group">
+                    <h3 data-ar="🎨 إعدادات المظهر" data-en="🎨 Appearance Settings">🎨 إعدادات المظهر</h3>
+                    
+                    <div class="setting-item">
+                        <label for="themeToggle" data-ar="الوضع المظلم:" data-en="Dark Mode:">الوضع المظلم:</label>
+                        <button id="themeToggle" class="control-btn" onclick="SettingsController.toggleTheme()">
+                            <span aria-hidden="true">🌙</span>
+                            <span data-ar="تفعيل" data-en="Enable">تفعيل</span>
+                        </button>
+                    </div>
+
+                    <div class="setting-item">
+                        <label for="langToggle" data-ar="لغة التطبيق:" data-en="App Language:">لغة التطبيق:</label>
+                        <button id="langToggle" class="control-btn" onclick="SettingsController.toggleLanguage()">
+                            <span data-ar="EN" data-en="عربي">EN</span>
+                        </button>
+                    </div>
+
+                    <div class="setting-item">
+                        <label for="bgPicker" data-ar="خلفية التطبيق:" data-en="App Background:">خلفية التطبيق:</label>
+                        <div class="bg-controls-wrapper">
+                            <div class="bg-buttons-row">
+                                <button class="control-btn" onclick="document.getElementById('bgPicker').click()">
+                                    <span aria-hidden="true">📷</span>
+                                    <span data-ar="اختيار صورة" data-en="Choose Image">اختيار صورة</span>
+                                </button>
+                                <input type="file" id="bgPicker" class="background-picker hidden" accept="image/*" onchange="BackgroundController.change(event)" aria-label="Background picker">
+                                <button class="control-btn danger" onclick="BackgroundController.remove()">
+                                    <span aria-hidden="true">❌</span>
+                                    <span data-ar="إزالة" data-en="Remove">إزالة</span>
+                                </button>
+                            </div>
+                            <div class="bg-preview" id="bgPreview" role="img" aria-label="Background preview"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3 data-ar="📿 إعدادات التسبيح" data-en="📿 Tasbih Settings">📿 إعدادات التسبيح</h3>
+                    
+                    <div class="setting-item">
+                        <label data-ar="تصفير العداد:" data-en="Reset Counter:">تصفير العداد:</label>
+                        <button class="control-btn danger" onclick="TasbihController.reset()">
+                            <span aria-hidden="true">🔄</span>
+                            <span data-ar="تصفير الآن" data-en="Reset Now">تصفير الآن</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3 data-ar="ℹ️ معلومات التطبيق" data-en="ℹ️ About App">ℹ️ معلومات التطبيق</h3>
+                    <div class="text-center" style="font-size: 0.9em; line-height: 1.7; opacity: 0.85; padding: 15px;">
+                        <p data-ar="📱 لإضافة التطبيق للشاشة الرئيسية: اضغط على زر ⬇️ أعلى الصفحة" data-en="📱 To add to home screen: click ⬇️ button at top">📱 لإضافة التطبيق للشاشة الرئيسية: اضغط على زر ⬇️ أعلى الصفحة</p>
+                        <br>
+                        <p data-ar="✅ يعمل بدون إنترنت | ✅ التسبيح الصوتي واليدوي | ✅ أذكارك محفوظة محلياً" data-en="✅ Works offline | ✅ Voice & Tap Tasbih | ✅ Your azkar saved locally">✅ يعمل بدون إنترنت | ✅ التسبيح الصوتي واليدوي | ✅ أذكارك محفوظة محلياً</p>
+                        <br>
+                        <p data-ar="💾 جميع البيانات محفوظة على جهازك" data-en="💾 All data is saved on your device">💾 جميع البيانات محفوظة على جهازك</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="ColorPicker.close()"></div>
+    <div class="color-menu" id="colorMenu" role="dialog" aria-labelledby="colorMenuTitle">
+        <button class="color-menu-close" onclick="ColorPicker.close()" aria-label="Close">✕</button>
+        <h3 id="colorMenuTitle" data-ar="🎨 اختر لون الزر" data-en="🎨 Choose Button Color">🎨 اختر لون الزر</h3>
+        <div class="color-options" id="colorOptions" role="listbox"></div>
+    </div>
+
+    <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+        <button class="nav-item active" onclick="NavigationController.show('tasbih')" 
+                aria-selected="true" 
+                aria-label="Tasbih">
+            <span aria-hidden="true">📿</span>
+            <span data-ar="المسبحة" data-en="Tasbih">المسبحة</span>
+        </button>
+        <button class="nav-item" onclick="NavigationController.show('my-azkar')" 
+                aria-selected="false" 
+                aria-label="My Azkar">
+            <span aria-hidden="true">📖</span>
+            <span data-ar="أذكاري" data-en="My Azkar">أذكاري</span>
+        </button>
+        <button class="nav-item" onclick="NavigationController.show('settings')" 
+                aria-selected="false" 
+                aria-label="Settings">
+            <span aria-hidden="true">⚙️</span>
+            <span data-ar="إعدادات" data-en="Settings">إعدادات</span>
+        </button>
+    </nav>
+
+    <script>
+        let counter = 0;
+        let voiceEnabled = false;
+        let recognition = null;
+        let isDarkMode = false;
+        let currentLang = 'ar';
+        let currentTasbih = "سبحان الله";
+        let deferredPrompt = null;
+        let buttonColor = '#1e3c72';
+        let lastCalculatedDate = null;
+        
+        const availableColors = [
+            '#1e3c72', '#2a5298', '#4CAF50', '#f44336', '#FF9800', '#9C27B0', '#00BCD4', '#E91E63', '#795548', '#607D8B', '#3F51B5', '#009688'
+        ];
+
+        function getHijriDate() {
+            try {
+                const today = new Date();
+                const todayStr = today.toDateString();
+                
+                if (lastCalculatedDate && lastCalculatedDate.dateStr === todayStr) {
+                    return lastCalculatedDate.result;
+                }
+
+                const gregorianDate = new Date();
+                const jd = gregorianDate.getTime() / 86400000 + 2440587.5;
+                const hijriStart = 1948439.5;
+                let daysSinceHijra = jd - hijriStart;
+                
+                let hijriYear = Math.floor(daysSinceHijra / 354.367) + 1;
+                let daysInYear = 0;
+                let testYear = 1;
+                let foundYear = false;
+                
+                while (!foundYear && testYear < 5000) {
+                    const isLeap = testYear % 30 === 2 || testYear % 30 === 5 || testYear % 30 === 7 || 
+                                  testYear % 30 === 10 || testYear % 30 === 13 || testYear % 30 === 16 || 
+                                  testYear % 30 === 18 || testYear % 30 === 21 || testYear % 30 === 24 || 
+                                  testYear % 30 === 26 || testYear % 30 === 29;
+                    
+                    const yearLength = isLeap ? 355 : 354;
+                    
+                    if (daysSinceHijra <= yearLength) {
+                        hijriYear = testYear;
+                        foundYear = true;
+                    } else {
+                        daysSinceHijra -= yearLength;
+                        testYear++;
+                    }
+                }
+                
+                const dayOfYear = Math.floor(daysSinceHijra) + 1;
+                const isCurrentYearLeap = hijriYear % 30 === 2 || hijriYear % 30 === 5 || hijriYear % 30 === 7 || 
+                                           hijriYear % 30 === 10 || hijriYear % 30 === 13 || hijriYear % 30 === 16 || 
+                                           hijriYear % 30 === 18 || hijriYear % 30 === 21 || hijriYear % 30 === 24 || 
+                                           hijriYear % 30 === 26 || hijriYear % 30 === 29;
+                
+                const hijriMonths = [
+                    { ar: 'محرم', en: 'Muharram', days: 30 },
+                    { ar: 'صفر', en: 'Safar', days: 29 },
+                    { ar: 'ربيع الأول', en: 'Rabi Al-Awwal', days: 30 },
+                    { ar: 'ربيع الثاني', en: 'Rabi Al-Thani', days: 29 },
+                    { ar: 'جمادى الأولى', en: 'Jumada Al-Ula', days: 30 },
+                    { ar: 'جمادى الآخرة', en: 'Jumada Al-Akhirah', days: 29 },
+                    { ar: 'رجب', en: 'Rajab', days: 30 },
+                    { ar: 'شعبان', en: 'Sha\'ban', days: 29 },
+                    { ar: 'رمضان', en: 'Ramadan', days: 30 },
+                    { ar: 'شوال', en: 'Shawwal', days: 29 },
+                    { ar: 'ذو القعدة', en: 'Dhu Al-Qi\'dah', days: 30 },
+                    { ar: 'ذو الحجة', en: 'Dhu Al-Hijjah', days: isCurrentYearLeap ? 30 : 29 }
+                ];
+                
+                let remainingDays = dayOfYear;
+                let hijriMonth = 0;
+                let hijriDay = 1;
+                
+                for (let i = 0; i < hijriMonths.length; i++) {
+                    if (remainingDays <= hijriMonths[i].days) {
+                        hijriMonth = i;
+                        hijriDay = remainingDays;
+                        break;
+                    }
+                    remainingDays -= hijriMonths[i].days;
+                }
+                
+                const result = {
+                    day: hijriDay,
+                    month: hijriMonths[hijriMonth],
+                    year: hijriYear
+                };
+                
+                lastCalculatedDate = {
+                    dateStr: todayStr,
+                    result: result
+                };
+                
+                return result;
+            } catch (error) {
+                console.error('❌ Error calculating Hijri date:', error);
+                return null;
+            }
+        }
+
+        class PWAController {
+            static init() {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('data:text/javascript,' + encodeURIComponent(`
+                        const CACHE_NAME = 'tasbih-app-v6';
+                        const urlsToCache = [
+                            '/',
+                            '/index.html',
+                            '/css/styles.css',
+                            '/js/app.js'
+                        ];
+                        
+                        self.addEventListener('install', event => {
+                            event.waitUntil(
+                                caches.open(CACHE_NAME).then(cache => {
+                                    return cache.addAll(urlsToCache);
+                                })
+                            );
+                            console.log('Service Worker installing');
+                        });
+                        
+                        self.addEventListener('activate', event => {
+                            event.waitUntil(
+                                caches.keys().then(cacheNames => {
+                                    return Promise.all(
+                                        cacheNames.map(cacheName => {
+                                            if (cacheName !== CACHE_NAME) {
+                                                return caches.delete(cacheName);
+                                            }
+                                        })
+                                    );
+                                })
+                            );
+                        });
+                        
+                        self.addEventListener('fetch', event => {
+                            event.respondWith(
+                                caches.match(event.request).then(response => {
+                                    return response || fetch(event.request).catch(() => {
+                                        console.log('Offline mode: serving from cache');
+                                    });
+                                })
+                            );
+                        });
+                    `)).then(registration => {
+                        console.log('✅ Service Worker registered');
+                        registration.update();
+                    }).catch(error => console.error('❌ SW registration failed:', error));
+                }
+
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    document.getElementById('installIcon').classList.remove('hidden');
+                    console.log('📲 PWA install prompt ready');
+                });
+            }
+
+            static install() {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('✅ PWA installed');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            }
+        }
+
+        class TasbihController {
+            static increment() {
+                counter++;
+                this.updateDisplay();
+                Storage.save('tasbihCounter', counter);
+                console.log('🔢 Counter incremented:', counter);
+            }
+
+            static updateDisplay() {
+                const counterEl = document.getElementById('counter');
+                if (!counterEl) return;
+                counterEl.textContent = counter;
+                
+                counterEl.style.transform = 'scale(1.15)';
+                setTimeout(() => {
+                    counterEl.style.transform = 'scale(1)';
+                }, 150);
+                
+                if (counter % 33 === 0) {
+                    counterEl.style.color = '#FF6B6B';
+                    setTimeout(() => {
+                        counterEl.style.color = 'white';
+                    }, 500);
+                }
+            }
+
+            static reset() {
+                if (confirm(Localization.get('هل تريد تصفير العداد؟', 'Reset the counter?'))) {
+                    counter = 0;
+                    const counterEl = document.getElementById('counter');
+                    if (counterEl) {
+                        counterEl.textContent = counter;
+                    }
+                    Storage.save('tasbihCounter', counter);
+                    console.log('🔄 Counter reset');
+                }
+            }
+
+            static updateCurrent() {
+                const select = document.getElementById('tasbihSelect');
+                if (!select) return;
+                currentTasbih = select.value;
+                const lastDetected = document.getElementById('lastDetected');
+                if (lastDetected) {
+                    lastDetected.textContent = Localization.get('آخر ذكر مستمع إليه: (لم يتم الكشف بعد)', 'Last detected: (Not yet detected)');
+                }
+                console.log('📝 Current tasbih changed:', currentTasbih);
+            }
+        }
+
+        class Localization {
+            static get(arText, enText) {
+                return currentLang === 'ar' ? arText : enText;
+            }
+
+            static update() {
+                document.querySelectorAll('[data-ar][data-en]').forEach(element => {
+                    if (element.id === 'dateDisplay' || element.parentElement.id === 'dateDisplay') {
+                        return;
+                    }
+                    element.textContent = this.get(element.dataset.ar, element.dataset.en);
+                });
+                
+                document.querySelectorAll('input, textarea').forEach(element => {
+                    if (element.dataset.arPlaceholder && element.dataset.enPlaceholder) {
+                        element.placeholder = this.get(element.dataset.arPlaceholder, element.dataset.enPlaceholder);
+                    }
+                });
+
+                if (currentLang === 'ar') {
+                    document.body.setAttribute('dir', 'rtl');
+                    document.body.classList.remove('english');
+                } else {
+                    document.body.setAttribute('dir', 'ltr');
+                    document.body.classList.add('english');
+                }
+
+                if (recognition) {
+                    recognition.lang = currentLang === 'ar' ? 'ar-SA' : 'en-US';
+                }
+
+                console.log('🌐 Language updated:', currentLang);
+            }
+
+            static updateButtonLabels() {
+                const themeBtn = document.querySelector('#themeToggle span:last-child');
+                if (themeBtn) {
+                    themeBtn.textContent = isDarkMode ? this.get('إيقاف', 'Disable') : this.get('تفعيل', 'Enable');
+                }
+
+                const langBtn = document.querySelector('#langToggle span');
+                if (langBtn) {
+                    langBtn.textContent = currentLang === 'ar' ? 'EN' : 'عربي';
+                }
+            }
+        }
+
+        class Storage {
+            static save(key, value) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                    console.log('💾 Saved to localStorage:', key);
+                } catch (e) {
+                    console.error('❌ localStorage save error:', e);
+                }
+            }
+
+            static load(key, defaultValue = null) {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                } catch (e) {
+                    console.error('❌ localStorage load error:', e);
+                    return defaultValue;
+                }
+            }
+
+            static remove(key) {
+                try {
+                    localStorage.removeItem(key);
+                    console.log('🗑️ Removed from localStorage:', key);
+                } catch (e) {
+                    console.error('❌ localStorage remove error:', e);
+                }
+            }
+        }
+
+        class DateController {
+            static init() {
+                this.load();
+                
+                setInterval(() => {
+                    this.checkDateUpdate();
+                }, 60000);
+                
+                console.log('📅 Date controller initialized with auto-update');
+            }
+            
+            static checkDateUpdate() {
+                const savedDate = Storage.load('lastHijriDate');
+                const today = new Date().toDateString();
+                
+                if (!savedDate || savedDate.gregorianDate !== today) {
+                    console.log('📅 Date changed, updating...');
+                    this.load();
+                }
+            }
+            
+            static load() {
+                const dateElement = document.getElementById('dateDisplay');
+                const updateIndicator = document.getElementById('updateIndicator');
+                
+                if (!dateElement) return;
+                
+                dateElement.classList.add('loading');
+                if (updateIndicator) updateIndicator.style.display = 'inline';
+                
+                setTimeout(() => {
+                    const hijri = getHijriDate();
+                    
+                    dateElement.classList.remove('loading');
+                    if (updateIndicator) updateIndicator.style.display = 'none';
+                    
+                    if (hijri) {
+                        const dateStrAr = `${hijri.day} ${hijri.month.ar} ${hijri.year} هـ`;
+                        const dateStrEn = `${hijri.day} ${hijri.month.en} ${hijri.year} AH`;
+                        
+                        dateElement.innerHTML = `
+                            <span data-ar="${dateStrAr}" data-en="${dateStrEn}">${currentLang === 'ar' ? dateStrAr : dateStrEn}</span>
+                        `;
+                        
+                        Storage.save('lastHijriDate', {
+                            gregorianDate: new Date().toDateString(),
+                            hijri: hijri
+                        });
+                        
+                        dateElement.classList.remove('error');
+                        console.log('✅ Hijri date loaded:', hijri);
+                    } else {
+                        const errorMsgAr = 'خطأ في الحساب';
+                        const errorMsgEn = 'Calculation error';
+                        dateElement.innerHTML = `<span data-ar="${errorMsgAr}" data-en="${errorMsgEn}" class="error">${currentLang === 'ar' ? errorMsgAr : errorMsgEn}</span>`;
+                        dateElement.classList.add('error');
+                        console.error('❌ Failed to load Hijri date');
+                    }
+                }, 300);
+            }
+            
+            static forceUpdate() {
+                lastCalculatedDate = null;
+                Storage.remove('lastHijriDate');
+                this.load();
+                console.log('🔄 Forced date update');
+            }
+        }
+
+        class BackgroundController {
+            static change(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                if (!file.type.startsWith('image/')) {
+                    alert(Localization.get('❌ يرجى اختيار صورة', '❌ Please select an image'));
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    document.body.style.backgroundImage = `url(${imageUrl})`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundAttachment = 'fixed';
+                    document.body.style.backgroundPosition = 'center';
+                    Storage.save('bgImage', imageUrl);
+                    
+                    const preview = document.getElementById('bgPreview');
+                    if (preview) {
+                        preview.style.backgroundImage = `url(${imageUrl})`;
+                        preview.classList.add('show');
+                    }
+                    
+                    console.log('🖼️ Background changed');
+                };
+                reader.onerror = () => {
+                    alert(Localization.get('❌ خطأ في تحميل الصورة', '❌ Error loading image'));
+                };
+                reader.readAsDataURL(file);
+            }
+
+            static remove() {
+                if (confirm(Localization.get('هل تريد إزالة خلفية الصورة؟', 'Remove background image?'))) {
+                    document.body.style.backgroundImage = '';
+                    document.body.style.backgroundSize = '';
+                    document.body.style.backgroundAttachment = '';
+                    document.body.style.backgroundPosition = '';
+                    Storage.remove('bgImage');
+                    
+                    const preview = document.getElementById('bgPreview');
+                    if (preview) {
+                        preview.classList.remove('show');
+                        preview.style.backgroundImage = '';
+                    }
+                    
+                    console.log('🖼️ Background removed');
+                }
+            }
+        }
+
+        class VoiceController {
+            static init() {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                
+                if (!SpeechRecognition) {
+                    console.warn("🔴 Speech recognition not supported");
+                    this.hideVoiceFeatures();
+                    return;
+                }
+
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.lang = currentLang === 'ar' ? 'ar-SA' : 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                
+                recognition.onresult = this.handleResult.bind(this);
+                recognition.onerror = this.handleError.bind(this);
+                recognition.onend = this.handleEnd.bind(this);
+                recognition.onstart = () => console.log('🎤 Voice recognition started');
+                recognition.onstop = () => console.log('🎤 Voice recognition stopped');
+                
+                console.log('✅ Voice recognition initialized');
+            }
+
+            static hideVoiceFeatures() {
+                const voiceBtn = document.getElementById('voiceBtn');
+                const voiceIndicator = document.getElementById('voiceIndicator');
+                if (voiceBtn) voiceBtn.style.display = 'none';
+                if (voiceIndicator) voiceIndicator.style.display = 'none';
+            }
+
+            static toggle() {
+                if (!recognition) return;
+
+                voiceEnabled = !voiceEnabled;
+                const voiceBtn = document.getElementById('voiceBtn');
+                const voiceIndicator = document.getElementById('voiceIndicator');
+                const voiceStatus = document.getElementById('voiceStatus');
+                const micIcon = document.getElementById('micIcon');
+                
+                if (!voiceBtn || !voiceIndicator || !voiceStatus || !micIcon) return;
+                
+                if (voiceEnabled) {
+                    try {
+                        recognition.start();
+                        micIcon.textContent = '⏹️';
+                        voiceBtn.querySelector('span:last-child').textContent = Localization.get('إيقاف الصوت', 'Disable Voice');
+                        voiceBtn.classList.add('danger');
+                        voiceIndicator.classList.add('listening');
+                        voiceStatus.textContent = Localization.get('جاري الاستماع...', 'Listening...');
+                        console.log('🎤 Voice enabled');
+                    } catch (e) {
+                        console.error('❌ Error starting recognition:', e);
+                        voiceEnabled = false;
+                        alert(Localization.get('حدث خطأ في تشغيل التسبيح الصوتي', 'Error starting voice recognition'));
+                    }
+                } else {
+                    recognition.stop();
+                    micIcon.textContent = '🎤';
+                    voiceBtn.querySelector('span:last-child').textContent = Localization.get('تفعيل الصوت', 'Enable Voice');
+                    voiceBtn.classList.remove('danger');
+                    voiceIndicator.classList.remove('listening');
+                    voiceStatus.textContent = Localization.get('التسبيح الصوتي: معطل', 'Voice Tasbih: Disabled');
+                    console.log('🔇 Voice disabled');
+                }
+            }
+
+            static handleResult(event) {
+                const lastResult = event.results[event.results.length - 1];
+                if (lastResult.isFinal) {
+                    const transcript = lastResult[0].transcript.trim();
+                    console.log('🎤 Recognized:', transcript);
+                    this.processCommand(transcript);
+                }
+            }
+
+            static processCommand(transcript) {
+                const lastDetected = document.getElementById('lastDetected');
+                if (lastDetected) {
+                    lastDetected.textContent = `${Localization.get('آخر ذكر:', 'Last:')} "${transcript}"`;
+                }
+                
+                const tasbihKeywords = {
+                    'سبحان الله': ['سبحان الله', 'سبحانلله', 'سبحان', 'subhanallah', 'subhan allah', 'سبحان الله العظيم'],
+                    'الحمد لله': ['الحمد لله', 'الحمدلله', 'الحمد', 'alhamdulillah', 'al hamd', 'الحمد لله رب العالمين'],
+                    'لا إله إلا الله': ['لا إله إلا الله', 'لا اله الا الله', 'لاإله الا الله', 'لا إله', 'lailahaillallah', 'la ilaha illa allah'],
+                    'الله أكبر': ['الله أكبر', 'الله اكبر', 'الله', 'allahu akbar', 'allah akbar', 'أكبر'],
+                    'لا حول ولا قوة إلا بالله': ['لا حول ولا قوة', 'لا حول', 'لا قوة', 'لا حولو لا قوة', 'lahawla wala quwwata'],
+                    'استغفر الله': ['استغفر الله', 'استغفر', 'أستغفر', 'astaghfirullah', 'astaghfir', 'اللهم استغفر']
+                };
+                
+                const selectedKeywords = tasbihKeywords[currentTasbih];
+                const transcriptLower = transcript.toLowerCase();
+                
+                const isMatch = selectedKeywords.some(keyword => {
+                    const keywordLower = keyword.toLowerCase();
+                    return transcriptLower.includes(keywordLower) || 
+                           keywordLower.includes(transcriptLower) ||
+                           this.levenshteinDistance(transcriptLower, keywordLower) < 3;
+                });
+                
+                if (isMatch) {
+                    TasbihController.increment();
+                    this.flashSuccess();
+                    console.log('✅ Voice command matched:', currentTasbih);
+                } else {
+                    console.log('❌ Voice command not matched:', transcript);
+                }
+            }
+
+            static levenshteinDistance(str1, str2) {
+                const matrix = [];
+                for (let i = 0; i <= str2.length; i++) {
+                    matrix[i] = [i];
+                }
+                for (let j = 0; j <= str1.length; j++) {
+                    matrix[0][j] = j;
+                }
+                for (let i = 1; i <= str2.length; i++) {
+                    for (let j = 1; j <= str1.length; j++) {
+                        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                            matrix[i][j] = matrix[i - 1][j - 1];
+                        } else {
+                            matrix[i][j] = Math.min(
+                                matrix[i - 1][j - 1] + 1,
+                                matrix[i][j - 1] + 1,
+                                matrix[i - 1][j] + 1
+                            );
+                        }
+                    }
+                }
+                return matrix[str2.length][str1.length];
+            }
+
+            static flashSuccess() {
+                const indicator = document.getElementById('voiceIndicator');
+                if (indicator) {
+                    indicator.style.background = 'rgba(76, 175, 80, 0.5)';
+                    setTimeout(() => {
+                        indicator.style.background = '';
+                    }, 300);
+                }
+            }
+
+            static handleError(event) {
+                console.error('🎤 Voice recognition error:', event.error);
+                if (voiceEnabled) {
+                    this.toggle();
+                }
+                
+                let errorMsg = Localization.get('حدث خطأ في التعرف على الصوت', 'Voice recognition error');
+                if (event.error === 'no-speech') {
+                    errorMsg = Localization.get('لم يتم اكتشاف صوت', 'No speech detected');
+                } else if (event.error === 'audio-capture') {
+                    errorMsg = Localization.get('لا يمكن الوصول إلى الميكروفون', 'Cannot access microphone');
+                } else if (event.error === 'not-allowed') {
+                    errorMsg = Localization.get('تم رفض الوصول إلى الميكروفون', 'Microphone access denied');
+                } else if (event.error === 'network') {
+                    errorMsg = Localization.get('خطأ في الشبكة', 'Network error');
+                }
+                
+                alert(errorMsg);
+            }
+
+            static handleEnd() {
+                if (voiceEnabled) {
+                    setTimeout(() => {
+                        try {
+                            recognition.start();
+                        } catch (e) {
+                            console.error('❌ Error restarting recognition:', e);
+                        }
+                    }, 100);
+                }
+            }
+        }
+
+        class AzkarController {
+            static add() {
+                const text = document.getElementById('zekrText');
+                const info = document.getElementById('zekrInfo');
+                
+                if (!text || !text.value.trim()) {
+                    alert(Localization.get('❌ يرجى كتابة الذكر أولاً!', '❌ Please write the dhikr first!'));
+                    return;
+                }
+
+                const zekr = {
+                    id: Date.now(),
+                    text: text.value.trim(),
+                    info: info ? info.value.trim() : '',
+                    date: new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US')
+                };
+
+                let myAzkar = Storage.load('myAzkar', []);
+                myAzkar.unshift(zekr);
+                Storage.save('myAzkar', myAzkar);
+
+                if (text) text.value = '';
+                if (info) info.value = '';
+
+                this.load();
+                alert(Localization.get('✅ تمت إضافة الذكر بنجاح!', '✅ Dhikr added successfully!'));
+                
+                console.log('📖 Dhikr added:', zekr.id);
+            }
+
+            static load() {
+                const myAzkar = Storage.load('myAzkar', []);
+                const listContainer = document.getElementById('myAzkarList');
+                
+                if (!listContainer) return;
+                
+                if (myAzkar.length === 0) {
+                    listContainer.innerHTML = `<div class="empty-message">${Localization.get('لم تضف أي أذكار بعد. ابدأ الآن!', 'No azkar added yet. Start now!')}</div>`;
+                    return;
+                }
+
+                listContainer.innerHTML = myAzkar.map(zekr => `
+                    <div class="zekr-item" role="listitem">
+                        <div class="zekr-text">${zekr.text}</div>
+                        <div class="zekr-date">${zekr.info ? zekr.info + ' - ' : ''}${zekr.date}</div>
+                        <button class="delete-btn" onclick="AzkarController.delete(${zekr.id})" aria-label="Delete dhikr">${Localization.get('حذف', 'Delete')}</button>
+                    </div>
+                `).join('');
+                
+                console.log('📖 Loaded', myAzkar.length, 'azkar');
+            }
+
+            static delete(id) {
+                if (confirm(Localization.get('هل تريد حذف هذا الذكر؟', 'Delete this dhikr?'))) {
+                    let myAzkar = Storage.load('myAzkar', []);
+                    myAzkar = myAzkar.filter(zekr => zekr.id !== id);
+                    Storage.save('myAzkar', myAzkar);
+                    this.load();
+                    console.log('📖 Dhikr deleted:', id);
+                }
+            }
+        }
+
+        class NavigationController {
+            static show(sectionName) {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    item.setAttribute('aria-selected', 'false');
+                });
+                
+                switch(sectionName) {
+                    case 'tasbih':
+                        document.getElementById('tasbih-section').classList.add('active');
+                        const navItem1 = document.querySelector('.nav-item[onclick="NavigationController.show(\'tasbih\')"]');
+                        if (navItem1) {
+                            navItem1.classList.add('active');
+                            navItem1.setAttribute('aria-selected', 'true');
+                        }
+                        break;
+                    case 'my-azkar':
+                        document.getElementById('my-azkar-section').classList.add('active');
+                        const navItem2 = document.querySelector('.nav-item[onclick="NavigationController.show(\'my-azkar\')"]');
+                        if (navItem2) {
+                            navItem2.classList.add('active');
+                            navItem2.setAttribute('aria-selected', 'true');
+                        }
+                        AzkarController.load();
+                        break;
+                    case 'settings':
+                        document.getElementById('settings-section').classList.add('active');
+                        const navItem3 = document.querySelector('.nav-item[onclick="NavigationController.show(\'settings\')"]');
+                        if (navItem3) {
+                            navItem3.classList.add('active');
+                            navItem3.setAttribute('aria-selected', 'true');
+                        }
+                        break;
+                }
+
+                if (voiceEnabled) {
+                    VoiceController.toggle();
+                }
+            }
+        }
+
+        class ColorPicker {
+            static show() {
+                const colorMenu = document.getElementById('colorMenu');
+                const optionsContainer = document.getElementById('colorOptions');
+                
+                if (!colorMenu || !optionsContainer) return;
+                
+                optionsContainer.innerHTML = availableColors.map((color, index) => `
+                    <div class="color-option ${color === buttonColor ? 'selected' : ''}" 
+                         style="background-color: ${color}"
+                         onclick="ColorPicker.select('${color}')"
+                         role="option"
+                         aria-selected="${color === buttonColor}"
+                         tabindex="0"
+                         onkeydown="if(event.key==='Enter'||event.key===' ') ColorPicker.select('${color}')"
+                         title="${color}">
+                    </div>
+                `).join('');
+                
+                colorMenu.classList.add('show');
+                const overlay = document.getElementById('overlay');
+                if (overlay) overlay.classList.add('show');
+                
+                if (voiceEnabled) {
+                    VoiceController.toggle();
+                }
+
+                console.log('🎨 Color menu opened');
+            }
+
+            static close() {
+                const colorMenu = document.getElementById('colorMenu');
+                const overlay = document.getElementById('overlay');
+                
+                if (colorMenu) colorMenu.classList.remove('show');
+                if (overlay) overlay.classList.remove('show');
+                
+                console.log('🎨 Color menu closed');
+            }
+
+            static select(color) {
+                buttonColor = color;
+                document.documentElement.style.setProperty('--primary-btn-color', color);
+                
+                const tasbihBtn = document.getElementById('tasbihBtn');
+                if (tasbihBtn) {
+                    tasbihBtn.style.background = color;
+                }
+                
+                Storage.save('buttonColor', color);
+                
+                document.querySelectorAll('.color-option').forEach(option => {
+                    option.classList.remove('selected');
+                    option.setAttribute('aria-selected', 'false');
+                });
+                
+                if (event && event.target) {
+                    event.target.classList.add('selected');
+                    event.target.setAttribute('aria-selected', 'true');
+                }
+                
+                this.close();
+                console.log('🎨 Button color changed:', color);
+            }
+        }
+
+        class SettingsController {
+            static toggleTheme() {
+                isDarkMode = !isDarkMode;
+                document.body.classList.toggle('dark-mode');
+                Storage.save('darkMode', isDarkMode);
+                
+                Localization.updateButtonLabels();
+                console.log('🌙 Dark mode toggled:', isDarkMode);
+            }
+
+            static toggleLanguage() {
+                currentLang = currentLang === 'ar' ? 'en' : 'ar';
+                Localization.update();
+                Storage.save('appLang', currentLang);
+                
+                DateController.load();
+                
+                Localization.updateButtonLabels();
+                console.log('🌐 Language toggled:', currentLang);
+                
+                if (document.getElementById('my-azkar-section').classList.contains('active')) {
+                    AzkarController.load();
+                }
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (document.getElementById('tasbih-section').classList.contains('active')) {
+                switch(event.code) {
+                    case 'Space':
+                        event.preventDefault();
+                        TasbihController.increment();
+                        break;
+                    case 'KeyR':
+                        TasbihController.reset();
+                        break;
+                    case 'KeyV':
+                        VoiceController.toggle();
+                        break;
+                }
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyD') {
+                event.preventDefault();
+                DateController.forceUpdate();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 App initializing...');
+            
+            const savedLang = Storage.load('appLang');
+            if (savedLang) {
+                currentLang = savedLang;
+                Localization.update();
+            }
+
+            const savedDarkMode = Storage.load('darkMode');
+            if (savedDarkMode !== null) {
+                isDarkMode = savedDarkMode;
+                if (isDarkMode) document.body.classList.add('dark-mode');
+            }
+
+            const savedColor = Storage.load('buttonColor');
+            if (savedColor) {
+                buttonColor = savedColor;
+                document.documentElement.style.setProperty('--primary-btn-color', savedColor);
+                const tasbihBtn = document.getElementById('tasbihBtn');
+                if (tasbihBtn) {
+                    tasbihBtn.style.background = savedColor;
+                }
+            }
+
+            const savedCounter = Storage.load('tasbihCounter');
+            if (savedCounter !== null) {
+                counter = savedCounter;
+                const counterEl = document.getElementById('counter');
+                if (counterEl) {
+                    counterEl.textContent = counter;
+                }
+            }
+
+            const savedBg = Storage.load('bgImage');
+            if (savedBg) {
+                document.body.style.backgroundImage = `url(${savedBg})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+                document.body.style.backgroundPosition = 'center';
+                
+                const preview = document.getElementById('bgPreview');
+                if (preview) {
+                    preview.style.backgroundImage = `url(${savedBg})`;
+                    preview.classList.add('show');
+                }
+            }
+
+            const savedDate = Storage.load('lastHijriDate');
+            if (savedDate && savedDate.gregorianDate === new Date().toDateString()) {
+                lastCalculatedDate = {
+                    dateStr: new Date().toDateString(),
+                    result: savedDate.hijri
+                };
+                console.log('📅 Using cached Hijri date');
+            }
+
+            PWAController.init();
+            VoiceController.init();
+            DateController.init();
+            Localization.updateButtonLabels();
+            
+            console.log('✅ App initialized successfully');
+        });
+    </script>
+</body>
+</html>
